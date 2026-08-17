@@ -1,11 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from config import settings
+from config import BASE_DIR, settings
 from routers import admin, chat, comments, gemini, groups, health, login, posts, user
 
 app = FastAPI()
-app.mount("/uploads", StaticFiles(directory="uploads", html=False), name="uploads")
+# 실행 위치가 아니라 프로젝트 폴더를 기준으로 삼는다. systemd나 cron에서
+# 다른 디렉터리로 띄워도 같은 곳을 가리킨다.
+app.mount(
+    "/uploads", StaticFiles(directory=BASE_DIR / "uploads", html=False), name="uploads"
+)
 
 """
 app.add_middleware(

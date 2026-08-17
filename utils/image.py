@@ -5,7 +5,11 @@ from pathlib import Path
 import pyvips
 from fastapi import HTTPException, UploadFile, status
 
-BASE_UPLOAD_DIR = Path("uploads/images")
+from config import BASE_DIR
+
+# 프로젝트 폴더 기준으로 잡는다. 실행 위치를 기준으로 두면 cron이나 다른
+# 디렉터리에서 부를 때 엉뚱한 곳을 보게 된다.
+BASE_UPLOAD_DIR = BASE_DIR / "uploads" / "images"
 MAX_DIMENSION = 1920
 MAX_FILE_SIZE = 20 * 1024 * 1024  # 20MB
 
@@ -45,6 +49,12 @@ def process_and_save_image(file: UploadFile, subdir: str) -> tuple[str, int]:
 
 
 def delete_image(url: str) -> None:
-    path = Path(url)
+    """저장된 url이 가리키는 파일을 지운다.
+
+    url은 앱에 내려주는 주소이면서 동시에 저장 위치다. 파일을 만질 때만
+    프로젝트 폴더 기준으로 풀어 쓴다. 앞의 슬래시를 떼는 이유는, 절대 경로를
+    붙이면 pathlib이 앞부분을 버려서 프로젝트 밖을 가리키기 때문이다.
+    """
+    path = BASE_DIR / url.lstrip("/")
     if path.exists():
         path.unlink()
